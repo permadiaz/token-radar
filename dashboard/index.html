@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar: pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div>
+      <p class="eyebrow">Sealed snapshot &middot; DefiLlama &middot; <span id="asOf"></span></p>
+      <h1>Token Radar</h1>
+      <p class="lede">Every protocol in the snapshot that records no token yet, ranked by what its token would be worth if its record stayed as it is. Not a prediction of a launch &mdash; a watchlist, priced.</p>
+    </div>
+    <div class="top-card">
+      <p class="top-card-label">Top implied value</p>
+      <p class="top-card-value" id="topValue">&mdash;</p>
+      <p class="top-card-sub" id="topName">&mdash;</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="stats" id="stats" aria-label="Board summary"></section>
+
+  <section class="panel model">
+    <h2>How the value is worked out</h2>
+    <p>Each protocol&rsquo;s implied value comes from its own figures in the snapshot, and from what the market already pays for the same kind of protocol:</p>
+    <ol class="formula">
+      <li><strong>Peer multiple.</strong> For each category, the median market-cap-over-TVL of the live-token protocols in that category, shrunk toward the global median with a prior of 10, then clamped between 0.05 and 1.50. The strong prior matters: some categories have a single live peer (Risk Curators: only Api3 at 2.97&times;; Prediction Market: only Rain at 400.2&times;), so a raw category median would be one protocol's price, not a market.</li>
+      <li><strong>Growth.</strong> The 7-day TVL change, clamped to &minus;50% &hellip; +100%, moves the value by half its size.</li>
+      <li><strong>Maturity.</strong> A protocol tracked longer counts for more: 0.70 for a newborn, up to 1.00 after four years.</li>
+      <li><strong>Reach.</strong> Each extra chain beyond the first adds 2%, up to four.</li>
+    </ol>
+    <p class="formula-line"><code>implied = TVL &times; peer multiple &times; growth &times; maturity &times; reach</code></p>
+    <p id="validation" class="validation"></p>
+  </section>
+
+  <section class="panel" id="boardPanel">
+    <div class="filters">
+      <label>Search <input id="q" type="search" placeholder="Name or slug&hellip;" autocomplete="off"></label>
+      <label>Category <select id="cat"><option value="">All categories</option></select></label>
+      <label>Chain <select id="chain"><option value="">All chains</option></select></label>
+      <label>Sort
+        <select id="sort">
+          <option value="implied">Implied value, high to low</option>
+          <option value="tvl">TVL, high to low</option>
+          <option value="growth">7-day growth, high to low</option>
+          <option value="age">Age, oldest first</option>
+          <option value="name">Name, A to Z</option>
+        </select>
+      </label>
+      <label class="check"><input id="watchOnly" type="checkbox"> Watchlist only</label>
+    </div>
+    <p class="count" id="count"></p>
+    <div class="table-wrap">
+      <table id="board">
+        <thead>
+          <tr>
+            <th class="num">#</th>
+            <th>Protocol</th>
+            <th>Category</th>
+            <th>Chains</th>
+            <th class="num">TVL</th>
+            <th class="num">7d</th>
+            <th class="num">Peer &times;</th>
+            <th class="num">Implied value</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="hint">Click a row to open its detail view and farm plan.</p>
+  </section>
+
+  <section class="panel detail" id="detail" hidden>
+    <div class="detail-head">
+      <div>
+        <p class="eyebrow" id="dRank"></p>
+        <h2 id="dName"></h2>
+        <p class="d-sub" id="dSub"></p>
+      </div>
+      <button id="dClose" type="button">Close &times;</button>
+    </div>
+    <div class="d-grid" id="dStats"></div>
+    <h3>How the number is built</h3>
+    <table class="breakdown" id="dModel"></table>
+    <h3>Farm plan</h3>
+    <ol class="steps" id="dSteps"></ol>
+    <h3>Live-token peers in the same category</h3>
+    <p class="d-note">These are the protocols whose market caps set the peer multiple above. Their ratios are the market&rsquo;s own prices, not this model&rsquo;s.</p>
+    <table class="peers" id="dPeers"></table>
+  </section>
+
+  <section class="panel">
+    <h2>Live tokens: where the multiples come from</h2>
+    <p>The board only ranks protocols with no token. These are the largest live-token protocols in the same snapshot, shown with the market cap the market already gives them. Their median market-cap-over-TVL, by category, is the peer multiple in the model.</p>
+    <div class="table-wrap">
+      <table id="live">
+        <thead>
+          <tr><th>Protocol</th><th>Category</th><th class="num">TVL</th><th class="num">Market cap</th><th class="num">Mcap / TVL</th><th class="num">7d</th></tr>
+        </thead>
+        <tbody id="liveRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>Source: DefiLlama protocol snapshot, sealed at <span id="source"></span>. The snapshot records no token for the ranked protocols; that is DefiLlama&rsquo;s record, not proof a token does not exist. Implied values are this entry&rsquo;s own claim, never make.fun&rsquo;s, and not a prediction that a token will be issued or what it will trade at.</p>
+  </footer>
+</main>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
